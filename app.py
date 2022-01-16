@@ -70,16 +70,18 @@ import json
 # cur = con.cursor()
 # sqlite_query = ("""
 #                 INSERT INTO animal_color
-#                 SELECT animals.animal_id, colors.color
+#                 SELECT animals.animal_id, colors.id
 #                 FROM animals
 #                 JOIN colors ON rtrim(animals.color1)=rtrim(colors.color)
+#                 GROUP BY animals.animal_id, colors.id
 #                 """)
 # cur.execute(sqlite_query)
 # sqlite_query = ("""
 #                 INSERT INTO animal_color
-#                 SELECT animals.animal_id, colors.color
+#                 SELECT animals.animal_id, colors.id
 #                 FROM animals
 #                 JOIN colors ON rtrim(animals.color2)=rtrim(colors.color)
+#                 GROUP BY animals.animal_id, colors.id
 #                 """)
 # cur.execute(sqlite_query)
 # con.commit()
@@ -185,16 +187,18 @@ def animal(itemid):
     con = sqlite3.connect("animal.db")
     cur = con.cursor()
     sqlite_query = (
-                    "SELECT ind, animal_id, name, date_of_birth, type, breed, age_upon_outcome, outcome_subtype, outcome_type, outcome_month, outcome_year, color_id "
+                    "SELECT ind, animal_id, name, date_of_birth, type, breed, age_upon_outcome, outcome_subtype, outcome_type, outcome_month, outcome_year, color "
                     "FROM animal_base "
                     "LEFT JOIN animal_type ON animal_type.id=animal_base.animal_id "
                     "LEFT JOIN animal_breed ON animal_breed.id=animal_base.animal_id "
                     "LEFT JOIN outcomes ON outcomes.animals_id=animal_base.animal_id "
                     "LEFT JOIN animal_color ON animal_color.animals_id=animal_base.animal_id "
+                    "LEFT JOIN colors ON animal_color.color_id=colors.id "
                     f"WHERE ind='{itemid}' "
                     )
     cur.execute(sqlite_query)
     executed_query = cur.fetchall()
+    print(executed_query)
     data = []
     for i in executed_query:
         animal_inf = {
@@ -213,6 +217,7 @@ def animal(itemid):
     if len(data)>1:
         data[0]['color'] = f"{data[0]['color']} - {data[1]['color']}"
         data.pop(1)
+    print(data)
     return json.dumps(data)
 
 if __name__ == "__main__":
