@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, jsonify
+from flask import Flask
 import json
 
 ###########normalization of colors############
@@ -180,45 +180,42 @@ import json
 
 app = Flask("HW_15")
 
-@app.route('/animals/<idx>')
-def animal(idx):
+@app.route('/animals/<itemid>')
+def animal(itemid):
     con = sqlite3.connect("animal.db")
     cur = con.cursor()
-    sqlite_query = ("""
-                    SELECT ind, animal_id, name, date_of_birth, type, breed, age_upon_outcome, outcome_subtype, outcome_type, outcome_month, outcome_year, color_id
-                    FROM animal_base
-                    LEFT JOIN animal_type ON animal_type.id=animal_base.animal_id
-                    LEFT JOIN animal_breed ON animal_breed.id=animal_base.animal_id
-                    LEFT JOIN outcomes ON outcomes.animals_id=animal_base.animal_id
-                    LEFT JOIN animal_color ON animal_color.animals_id=animal_base.animal_id
-                    WHERE ind='{idx}'
-                    """)
+    sqlite_query = (
+                    "SELECT ind, animal_id, name, date_of_birth, type, breed, age_upon_outcome, outcome_subtype, outcome_type, outcome_month, outcome_year, color_id "
+                    "FROM animal_base "
+                    "LEFT JOIN animal_type ON animal_type.id=animal_base.animal_id "
+                    "LEFT JOIN animal_breed ON animal_breed.id=animal_base.animal_id "
+                    "LEFT JOIN outcomes ON outcomes.animals_id=animal_base.animal_id "
+                    "LEFT JOIN animal_color ON animal_color.animals_id=animal_base.animal_id "
+                    f"WHERE ind='{itemid}' "
+                    )
     cur.execute(sqlite_query)
     executed_query = cur.fetchall()
+    data = []
+    for i in executed_query:
+        animal_inf = {
+            "age_upon_outcome": i[6],
+            "name": i[2],
+            "type": i[4],
+            "breed": i[5],
+            "color": i[11],
+            "birth_day": i[3],
+            "outcome_subtype": i[7],
+            "outcome_type": i[8],
+            "outcome_month": i[9],
+            "outcome_year": i[10]
+            }
+        data.append(animal_inf)
+    if len(data)>1:
+        data[0]['color'] = f"{data[0]['color']} - {data[1]['color']}"
+        data.pop(1)
+    return json.dumps(data)
 
-    return executed_query
-
-print(animal(1))
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-# con = sqlite3.connect("animal.db")
-# cur = con.cursor()
-# sqlite_query = ("""
-#                 SELECT ind, animal_id, name, date_of_birth, type, breed, age_upon_outcome, outcome_subtype, outcome_type, outcome_month, outcome_year, color_id
-#                 FROM animal_base
-#                 LEFT JOIN animal_type ON animal_type.id=animal_base.animal_id
-#                 LEFT JOIN animal_breed ON animal_breed.id=animal_base.animal_id
-#                 LEFT JOIN outcomes ON outcomes.animals_id=animal_base.animal_id
-#                 LEFT JOIN animal_color ON animal_color.animals_id=animal_base.animal_id
-#                 WHERE ind=2
-#                 """)
-# cur.execute(sqlite_query)
-# executed_query = cur.fetchall()
-#
-# for asd in executed_query:
-#     for i in asd:
-#         print(i)
 
 
