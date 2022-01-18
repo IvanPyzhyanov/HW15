@@ -19,7 +19,8 @@ import json
 # sqlite_query = ("""
 #                 CREATE TABLE animal_color (
 #                 animals_id varchar(10),
-#                 color_id integer)
+#                 color_id integer,
+#                 FOREIGN KEY (color_id) REFERENCES colors (id))
 #                 """)
 # cur.execute(sqlite_query)
 # con.close()
